@@ -64,19 +64,24 @@ if (!url || url.includes("tu-proyecto")) {
   ok(`URL del proyecto: ${url}`);
 }
 
-// La anon key es un JWT: siempre empieza por 'eyJ'.
-const anonKeyLooksReal = anonKey && anonKey.startsWith("eyJ");
+// Formato legado: JWT que empieza por 'eyJ'. Formato nuevo: 'sb_publishable_...'.
+const anonKeyLooksReal =
+  anonKey && (anonKey.startsWith("eyJ") || anonKey.startsWith("sb_publishable_"));
 if (!anonKeyLooksReal) {
   bad("Falta NEXT_PUBLIC_SUPABASE_ANON_KEY");
   pending.push(
-    "Copia la clave 'anon public' desde Supabase → Project Settings → API\n" +
-      "     y pégala en .env.local (empieza por eyJ...)",
+    "Copia la clave publicable desde Supabase → Project Settings → API Keys\n" +
+      "     y pégala en .env.local (empieza por sb_publishable_... o eyJ...)",
   );
 } else {
   ok("Clave anónima presente");
 }
 
-if (env.SUPABASE_SERVICE_ROLE_KEY?.startsWith("eyJ")) {
+// Formato legado 'eyJ...' o nuevo 'sb_secret_...'.
+if (
+  env.SUPABASE_SERVICE_ROLE_KEY?.startsWith("eyJ") ||
+  env.SUPABASE_SERVICE_ROLE_KEY?.startsWith("sb_secret_")
+) {
   ok("Clave de servicio presente (podrás sembrar datos de prueba)");
 } else {
   warn("Sin SUPABASE_SERVICE_ROLE_KEY: la app funciona, pero no manda correos ni siembra datos");
