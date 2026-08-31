@@ -1,0 +1,14 @@
+<svg width="620" height="160" viewBox="0 0 620 160" xmlns="http://www.w3.org/2000/svg">
+  <!-- EMBATE — Lockup horizontal v2 (isotipo + wordmark), fondo CLARO -->
+  <g transform="translate(16 32) scale(0.96)">
+    <path d="M 10 82 L 58 18 L 90 60"
+          fill="none"
+          stroke="#C6FF3D"
+          stroke-width="18"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  <!-- Sobre fondo claro, cambiar este fill a #0B0D12 -->
+  <text x="136" y="102" font-family="'Space Grotesk', sans-serif" font-weight="700"
+        font-size="66" letter-spacing="5" fill="#0B0D12">EMBATE</text>
+</svg>

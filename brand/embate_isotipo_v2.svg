@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- EMBATE — Isotipo "Nodo de Convergencia" v2 -->
+  <!-- Dos recorridos de distinta longitud que suben y convergen en el vértice. -->
+  <!-- La pata izquierda es ~20% más larga: no es una flecha simétrica. -->
+  <path d="M 10 82 L 58 18 L 90 60"
+        fill="none"
+        stroke="#C6FF3D"
+        stroke-width="18"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+</svg>

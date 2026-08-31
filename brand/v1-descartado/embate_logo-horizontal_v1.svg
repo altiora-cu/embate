@@ -1,0 +1,9 @@
+<svg width="680" height="160" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+  <!-- EMBATE — Lockup horizontal (isotipo + wordmark) -->
+  <!-- Isotipo escalado -->
+  <line x1="157" y1="14" x2="132" y2="48" stroke="#C6FF3D" stroke-width="18" stroke-linecap="round"/>
+  <line x1="42" y1="130" x2="132" y2="48" stroke="#C6FF3D" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="132" cy="48" r="13" fill="#0B0D12"/>
+  <!-- Wordmark: usar fill #0B0D12 en vez de #F5F3EE si se coloca sobre fondo claro -->
+  <text x="215" y="105" font-family="'Space Grotesk', sans-serif" font-weight="700" font-size="64" letter-spacing="2" fill="#F5F3EE">EMBATE</text>
+</svg>

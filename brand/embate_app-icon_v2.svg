@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- EMBATE — App icon / favicon base para manifest PWA (v2) -->
+  <rect width="512" height="512" rx="112" fill="#0B0D12"/>
+  <!-- Isotipo escalado al 62% del lienzo y centrado -->
+  <g transform="translate(96 96) scale(3.2)">
+    <path d="M 10 82 L 58 18 L 90 60"
+          fill="none"
+          stroke="#C6FF3D"
+          stroke-width="18"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+</svg>

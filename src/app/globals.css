@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+/*
+ * EMBATE — Design tokens (paquete de dirección creativa v2, §7)
+ * Modo oscuro por defecto. Los tokens de marca del organizador (white-label)
+ * se inyectan en runtime sobre --brand-* desde el layout de la comunidad.
+ */
+
+:root {
+  /* White-label: valores por defecto de Embate, sobrescribibles por comunidad */
+  --brand-accent: #c6ff3d;
+  --brand-accent-ink: #0b0d12;
+}
+
+@theme {
+  /* Paleta base */
+  --color-base: #0b0d12;
+  --color-surface: #1a1d24;
+  --color-surface-alt: #2a2e38;
+  --color-ink: #f5f3ee;
+  --color-muted: #8a93a6;
+  --color-accent: #c6ff3d;
+  --color-signal: #2e5cff;
+  --color-warn: #ffb020;
+  --color-danger: #ff4d4d;
+
+  /* Acento de marca del organizador (white-label) */
+  --color-brand: var(--brand-accent);
+  --color-brand-ink: var(--brand-accent-ink);
+
+  /* Tipografía */
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Escala tipográfica (§7) */
+  --text-meta: 0.75rem;
+  --text-meta--line-height: 1.1rem;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.35rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.55rem;
+  --text-subtitle: 1.25rem;
+  --text-subtitle--line-height: 1.7rem;
+  --text-section: 1.75rem;
+  --text-section--line-height: 2.1rem;
+  --text-hero: 2.5rem;
+  --text-hero--line-height: 2.75rem;
+
+  /* Radios (§7) */
+  --radius-control: 8px;
+  --radius-card: 16px;
+  --radius-pill: 9999px;
+
+  /* Sombra de tarjeta sobre fondo oscuro (§7 — usar con moderación) */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+
+  /* Easings (§8) */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out-quart: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-surface-alt);
+  }
+
+  html {
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-base);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  /* Foco visible y consistente en toda la app (accesibilidad) */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-brand);
+    color: var(--color-brand-ink);
+  }
+}
+
+@layer utilities {
+  /*
+   * Entrada escalonada de listas (§8).
+   * Va en CSS y no en JS para que las tarjetas de torneo, el ranking y la tabla
+   * puedan seguir siendo Server Components: aparecer con la página no justifica
+   * mandar una librería de animación al navegador.
+   * El retraso lo pone quien la usa con `animation-delay` en línea.
+   */
+  @keyframes embate-rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .animate-rise {
+    animation: embate-rise-in 420ms var(--ease-out-quint) both;
+  }
+
+  /* Barrido del acento sobre el marcador cuando un resultado queda en firme. */
+  @keyframes embate-flash {
+    0% {
+      background-color: color-mix(in oklab, var(--color-brand) 22%, transparent);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+
+  .animate-flash {
+    animation: embate-flash 900ms var(--ease-out-quint) both;
+  }
+
+  /* Textura sutil de "sala de comando": rejilla apenas perceptible */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(245, 243, 238, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(245, 243, 238, 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Números tabulares para marcadores y tablas: evita el "baile" de dígitos */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

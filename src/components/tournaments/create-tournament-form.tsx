@@ -1,0 +1,174 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
+
+import { Button } from "@/components/ui/button";
+import { Field, Input, RadioCard } from "@/components/ui/field";
+import type { FormState } from "@/lib/actions/communities";
+import { createTournamentAction } from "@/lib/actions/tournaments";
+
+const INITIAL: FormState = { status: "idle" };
+
+/**
+ * Creación de torneo.
+ *
+ * El cupo y el plazo de inscripción son OPCIONALES: un torneo no arranca por
+ * llenarse ni por vencer una fecha, arranca cuando el organizador cierra las
+ * inscripciones y sortea. Poner un tope es una herramienta que él decide usar,
+ * no una condición del sistema.
+ */
+export function CreateTournamentForm({
+  communityId,
+  slug,
+}: {
+  communityId: string;
+  slug: string;
+}) {
+  const t = useTranslations();
+  const action = createTournamentAction.bind(null, communityId, slug);
+  const [state, formAction, pending] = useActionState(action, INITIAL);
+  const [capped, setCapped] = useState(false);
+
+  const fields = state.status === "error" ? (state.fields ?? {}) : {};
+
+  return (
+    <form action={formAction} className="flex flex-col gap-6" noValidate>
+      <Field
+        label={t("tournaments.name")}
+        htmlFor="name"
+        error={fields.name && t(fields.name, { count: 2 })}
+      >
+        <Input
+          id="name"
+          name="name"
+          placeholder={t("tournaments.namePlaceholder")}
+          required
+        />
+      </Field>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 text-body-sm font-medium text-ink">
+          {t("tournaments.format")}
+        </legend>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <RadioCard
+            name="format"
+            value="league"
+            title={t("tournaments.formatLeague")}
+            description={t("tournaments.formatLeagueHint")}
+            defaultChecked
+          />
+          <RadioCard
+            name="format"
+            value="cup"
+            title={t("tournaments.formatCup")}
+            description={t("tournaments.formatCupHint")}
+          />
+          <RadioCard
+            name="format"
+            value="blitz"
+            title={t("tournaments.formatBlitz")}
+            description={t("tournaments.formatBlitzHint")}
+          />
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 text-body-sm font-medium text-ink">
+          {t("tournaments.gameMode")}
+        </legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <RadioCard
+            name="gameMode"
+            value="ultimate_team"
+            title={t("tournaments.gameModeUltimate")}
+            defaultChecked
+          />
+          <RadioCard
+            name="gameMode"
+            value="kick_off"
+            title={t("tournaments.gameModeKickOff")}
+          />
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 text-body-sm font-medium text-ink">
+          {t("tournaments.size")}
+        </legend>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setCapped(false)}
+            aria-pressed={!capped}
+            className={`rounded-[var(--radius-control)] border px-4 py-3 text-left text-body-sm transition-colors duration-150 ease-(--ease-standard) ${
+              !capped
+                ? "border-brand bg-brand/10 text-brand"
+                : "border-surface-alt text-muted hover:border-muted/50"
+            }`}
+          >
+            {t("tournaments.sizeUnlimited")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCapped(true)}
+            aria-pressed={capped}
+            className={`rounded-[var(--radius-control)] border px-4 py-3 text-left text-body-sm transition-colors duration-150 ease-(--ease-standard) ${
+              capped
+                ? "border-brand bg-brand/10 text-brand"
+                : "border-surface-alt text-muted hover:border-muted/50"
+            }`}
+          >
+            {t("tournaments.sizeCustom")}
+          </button>
+        </div>
+
+        {/* Sin tope no se manda ningún número: el campo vacío llega como `null`. */}
+        {capped && (
+          <Input
+            name="size"
+            type="number"
+            inputMode="numeric"
+            min={2}
+            defaultValue={16}
+            aria-label={t("tournaments.size")}
+            className="tnum mt-1 max-w-40"
+          />
+        )}
+
+        <p className="text-meta text-muted">{t("tournaments.sizeHint")}</p>
+      </fieldset>
+
+      <Field
+        label={`${t("tournaments.registrationCloses")} (${t("common.optional")})`}
+        htmlFor="registrationClosesAt"
+        hint={t("tournaments.registrationClosesHint")}
+      >
+        <Input
+          id="registrationClosesAt"
+          name="registrationClosesAt"
+          type="datetime-local"
+        />
+      </Field>
+
+      <Field
+        label={`${t("tournaments.startsAt")} (${t("common.optional")})`}
+        htmlFor="startsAt"
+      >
+        <Input id="startsAt" name="startsAt" type="datetime-local" />
+      </Field>
+
+      {state.status === "error" && !state.fields && (
+        <p role="alert" className="text-body-sm text-danger">
+          {t(state.error)}
+        </p>
+      )}
+
+      <Button type="submit" size="lg" loading={pending}>
+        {t("tournaments.createTitle")}
+      </Button>
+    </form>
+  );
+}

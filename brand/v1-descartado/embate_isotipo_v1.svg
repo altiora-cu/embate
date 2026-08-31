@@ -1,0 +1,9 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- EMBATE — Isotipo "Nodo de Convergencia" -->
+  <!-- Trazo corto (superior) -->
+  <line x1="172" y1="18" x2="140" y2="60" stroke="#C6FF3D" stroke-width="24" stroke-linecap="round"/>
+  <!-- Trazo largo (inferior) -->
+  <line x1="28" y1="162" x2="140" y2="60" stroke="#C6FF3D" stroke-width="24" stroke-linecap="round"/>
+  <!-- Nodo de convergencia (espacio negativo) -->
+  <circle cx="140" cy="60" r="17" fill="#0B0D12"/>
+</svg>
