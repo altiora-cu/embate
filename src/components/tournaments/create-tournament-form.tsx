@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Field, Input, RadioCard } from "@/components/ui/field";
 import type { FormState } from "@/lib/actions/communities";
-import { createTournamentAction } from "@/lib/actions/tournaments";
+import { createTournamentAction, quickTournamentAction } from "@/lib/actions/tournaments";
 
 const INITIAL: FormState = { status: "idle" };
 
@@ -17,16 +17,24 @@ const INITIAL: FormState = { status: "idle" };
  * llenarse ni por vencer una fecha, arranca cuando el organizador cierra las
  * inscripciones y sortea. Poner un tope es una herramienta que él decide usar,
  * no una condición del sistema.
+ *
+ * Sin `communityId`/`slug` el formulario opera en modo rápido: la acción del
+ * servidor resuelve (o crea) la comunidad personal del usuario por su cuenta.
  */
 export function CreateTournamentForm({
   communityId,
   slug,
+  defaultFormat = "league",
 }: {
-  communityId: string;
-  slug: string;
+  communityId?: string;
+  slug?: string;
+  defaultFormat?: "league" | "cup" | "blitz";
 }) {
   const t = useTranslations();
-  const action = createTournamentAction.bind(null, communityId, slug);
+  const action =
+    communityId && slug
+      ? createTournamentAction.bind(null, communityId, slug)
+      : quickTournamentAction;
   const [state, formAction, pending] = useActionState(action, INITIAL);
   const [capped, setCapped] = useState(false);
 
@@ -57,19 +65,21 @@ export function CreateTournamentForm({
             value="league"
             title={t("tournaments.formatLeague")}
             description={t("tournaments.formatLeagueHint")}
-            defaultChecked
+            defaultChecked={defaultFormat === "league"}
           />
           <RadioCard
             name="format"
             value="cup"
             title={t("tournaments.formatCup")}
             description={t("tournaments.formatCupHint")}
+            defaultChecked={defaultFormat === "cup"}
           />
           <RadioCard
             name="format"
             value="blitz"
             title={t("tournaments.formatBlitz")}
             description={t("tournaments.formatBlitzHint")}
+            defaultChecked={defaultFormat === "blitz"}
           />
         </div>
       </fieldset>

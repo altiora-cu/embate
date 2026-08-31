@@ -315,6 +315,30 @@ export interface Database {
         Args: { p_match_id: string; p_winner_entry_id: string };
         Returns: undefined;
       };
+      is_platform_admin: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      admin_list_users: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          email: string;
+          display_name: string;
+          is_admin: boolean;
+          communities_owned: number;
+          memberships: number;
+          created_at: string;
+        }[];
+      };
+      admin_delete_user: {
+        Args: { p_user_id: string };
+        Returns: undefined;
+      };
+      admin_delete_community: {
+        Args: { p_community_id: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       community_role: CommunityRole;

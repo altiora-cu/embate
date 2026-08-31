@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { Isotipo } from "@/components/ui/logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { SignOutButton } from "@/components/layout/sign-out-button";
+import { isPlatformAdmin } from "@/lib/data/admin";
 
 /**
  * Cabecera de las pantallas privadas.
@@ -18,6 +19,7 @@ export async function AppHeader({
   community?: { name: string; slug: string; logoUrl: string | null };
 }) {
   const t = await getTranslations("nav");
+  const showAdmin = await isPlatformAdmin();
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-alt/60 bg-base/85 backdrop-blur-md">
@@ -56,6 +58,14 @@ export async function AppHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
+          {showAdmin && (
+            <Link
+              href="/app/admin"
+              className="rounded-[var(--radius-control)] border border-brand/40 px-2.5 py-1 text-meta font-medium text-brand transition-colors hover:bg-brand/10"
+            >
+              {t("platformAdmin")}
+            </Link>
+          )}
           <LocaleSwitcher className="hidden sm:inline-flex" />
           <SignOutButton />
         </div>

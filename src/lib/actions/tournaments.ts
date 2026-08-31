@@ -12,6 +12,7 @@ import {
   createTournamentSchema,
   fieldErrors,
   registerEntrySchema,
+  slugify,
 } from "@/lib/validation/schemas";
 
 import { fail, ok, toErrorKey, type ActionResult } from "./result";
@@ -65,6 +66,111 @@ export async function createTournamentAction(
 
   revalidatePath(`/c/${slug}`);
   return localeRedirect(`/c/${slug}/t/${data.id}`);
+}
+
+/**
+ * Torneo rápido: crear un torneo sin pasar por la pantalla de comunidades.
+ *
+ * La comunidad sigue existiendo por debajo — todo el aislamiento de datos
+ * depende de ella — pero deja de ser un paso visible: si el usuario ya es dueño
+ * de una, el torneo se crea ahí; si no, se le crea su espacio personal en el
+ * mismo movimiento y queda parado en la pantalla del torneo con el enlace de
+ * invitación listo para repartir.
+ */
+export async function quickTournamentAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = createTournamentSchema.safeParse({
+    name: formData.get("name"),
+    format: formData.get("format"),
+    gameMode: formData.get("gameMode"),
+    size: formData.get("size") ?? "",
+    startsAt: formData.get("startsAt") ?? "",
+    registrationClosesAt: formData.get("registrationClosesAt") ?? "",
+  });
+
+  if (!parsed.success) {
+    return { status: "error", error: "errors.generic", fields: fieldErrors(parsed.error) };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { status: "error", error: "errors.AUTH_REQUIRED" };
+
+  const { data: owned } = await supabase
+    .from("communities")
+    .select("id, slug")
+    .eq("owner_id", user.id)
+    .order("created_at", { ascending: true })
+    .limit(1);
+
+  let community = owned?.[0] ?? null;
+
+  if (!community) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .single();
+
+    const displayName = profile?.display_name?.trim() || "jugador";
+    // Sufijo aleatorio: dos "Liga de Carlos" no deben pelearse por el slug.
+    const suffix = Math.random().toString(36).slice(2, 6);
+    const base = slugify(displayName).slice(0, 30);
+    const slug = `${base || "liga"}-${suffix}`;
+
+    const { data: created, error: communityError } = await supabase
+      .from("communities")
+      .insert({
+        name: `Liga de ${displayName}`.slice(0, 60),
+        slug,
+        owner_id: user.id,
+      })
+      .select("id, slug")
+      .single();
+
+    if (communityError || !created) {
+      return { status: "error", error: toErrorKey(communityError) };
+    }
+
+    const { error: membershipError } = await supabase
+      .from("community_memberships")
+      .insert({ community_id: created.id, user_id: user.id, role: "owner" });
+
+    if (membershipError) {
+      return { status: "error", error: toErrorKey(membershipError) };
+    }
+
+    community = created;
+  }
+
+  const { data, error } = await supabase
+    .from("tournaments")
+    .insert({
+      community_id: community.id,
+      name: parsed.data.name,
+      format: parsed.data.format,
+      game_mode: parsed.data.gameMode,
+      size: parsed.data.size,
+      status: "registration",
+      starts_at: parsed.data.startsAt
+        ? new Date(parsed.data.startsAt).toISOString()
+        : null,
+      registration_closes_at: parsed.data.registrationClosesAt
+        ? new Date(parsed.data.registrationClosesAt).toISOString()
+        : null,
+      created_by: user.id,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) return { status: "error", error: toErrorKey(error) };
+
+  revalidatePath(`/c/${community.slug}`);
+  return localeRedirect(`/c/${community.slug}/t/${data.id}`);
 }
 
 export async function registerAction(

@@ -34,6 +34,9 @@ export function AuthForm({
   }
 
   const fields = state.status === "error" ? (state.fields ?? {}) : {};
+  // Tras un error, React 19 resetea el formulario a sus defaultValue: se
+  // rellenan con lo que el usuario había escrito para que no lo pierda.
+  const values = state.status === "error" ? (state.values ?? {}) : {};
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
@@ -49,6 +52,7 @@ export function AuthForm({
             name="displayName"
             autoComplete="nickname"
             placeholder={t("auth.displayNamePlaceholder")}
+            defaultValue={values.displayName}
             required
           />
         </Field>
@@ -65,6 +69,7 @@ export function AuthForm({
           type="email"
           inputMode="email"
           autoComplete="email"
+          defaultValue={values.email}
           required
         />
       </Field>

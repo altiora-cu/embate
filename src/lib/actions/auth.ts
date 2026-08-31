@@ -22,8 +22,27 @@ function safeNext(value: FormDataEntryValue | null): string {
 
 export type AuthState =
   | { status: "idle" }
-  | { status: "error"; error: string; fields?: Record<string, string> }
+  | {
+      status: "error";
+      error: string;
+      fields?: Record<string, string>;
+      /**
+       * Lo que el usuario había escrito (nunca la contraseña). React 19 resetea
+       * el formulario tras cada intento; sin esto, un error obliga a reescribir todo.
+       */
+      values?: { displayName?: string; email?: string };
+    }
   | { status: "check_email" };
+
+/** Valores a conservar en el formulario tras un intento fallido. */
+function keptValues(formData: FormData): { displayName?: string; email?: string } {
+  const displayName = formData.get("displayName");
+  const email = formData.get("email");
+  return {
+    displayName: typeof displayName === "string" ? displayName : undefined,
+    email: typeof email === "string" ? email : undefined,
+  };
+}
 
 export async function signInAction(
   _prev: AuthState,
@@ -35,13 +54,20 @@ export async function signInAction(
   });
 
   if (!parsed.success) {
-    return { status: "error", error: "errors.generic", fields: fieldErrors(parsed.error) };
+    return {
+      status: "error",
+      error: "errors.generic",
+      fields: fieldErrors(parsed.error),
+      values: keptValues(formData),
+    };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
-  if (error) return { status: "error", error: toErrorKey(error) };
+  if (error) {
+    return { status: "error", error: toErrorKey(error), values: keptValues(formData) };
+  }
 
   return localeRedirect(safeNext(formData.get("next")));
 }
@@ -57,7 +83,12 @@ export async function signUpAction(
   });
 
   if (!parsed.success) {
-    return { status: "error", error: "errors.generic", fields: fieldErrors(parsed.error) };
+    return {
+      status: "error",
+      error: "errors.generic",
+      fields: fieldErrors(parsed.error),
+      values: keptValues(formData),
+    };
   }
 
   const supabase = await createClient();
@@ -73,7 +104,9 @@ export async function signUpAction(
     },
   });
 
-  if (error) return { status: "error", error: toErrorKey(error) };
+  if (error) {
+    return { status: "error", error: toErrorKey(error), values: keptValues(formData) };
+  }
 
   // Con confirmación de correo activada no hay sesión todavía: hay que avisar
   // al usuario que revise su bandeja en vez de dejarlo mirando un formulario.

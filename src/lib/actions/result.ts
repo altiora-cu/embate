@@ -35,6 +35,10 @@ const DB_ERROR_CODES = [
   "REASON_REQUIRED",
   "FREE_PLAN_TOURNAMENT_LIMIT",
   "FREE_PLAN_COMMUNITY_LIMIT",
+  "CANNOT_DELETE_SELF",
+  "CANNOT_DELETE_ADMIN",
+  "USER_NOT_FOUND",
+  "COMMUNITY_NOT_FOUND",
 ] as const;
 
 /**
@@ -60,6 +64,17 @@ export function toErrorKey(error: unknown): string {
   if (message.includes("already registered") || message.includes("User already")) {
     return "errors.emailInUse";
   }
+
+  // Errores de registro de Supabase Auth, mapeados a mensajes accionables:
+  // "invalid" a secas no le dice a nadie qué corregir.
+  if (message.includes("email_address_invalid") || message.includes("is invalid")) {
+    return "errors.emailRejected";
+  }
+  if (message.includes("Password should")) return "errors.passwordWeak";
+  if (message.includes("rate limit") || message.includes("Too many requests")) {
+    return "errors.rateLimited";
+  }
+  if (message.includes("not confirmed")) return "errors.emailNotConfirmed";
 
   return "errors.generic";
 }

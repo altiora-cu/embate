@@ -24,14 +24,24 @@ export default async function MyCommunitiesPage() {
           <h1 className="text-section">{t("communities.title")}</h1>
           <p className="mt-1 text-body-sm text-muted">{t("communities.subtitle")}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/app/join">
             <Button variant="secondary" size="sm">
               {t("communities.join")}
             </Button>
           </Link>
           <Link href="/app/new">
-            <Button size="sm">{t("communities.createTitle")}</Button>
+            <Button variant="secondary" size="sm">
+              {t("communities.createTitle")}
+            </Button>
+          </Link>
+          <Link href="/app/quick?f=league">
+            <Button variant="secondary" size="sm">
+              {t("quick.leagueCta")}
+            </Button>
+          </Link>
+          <Link href="/app/quick?f=blitz">
+            <Button size="sm">{t("quick.quickCta")}</Button>
           </Link>
         </div>
       </div>
@@ -41,9 +51,14 @@ export default async function MyCommunitiesPage() {
           title={t("communities.empty")}
           body={t("communities.emptyCta")}
           action={
-            <Link href="/app/new" className="mt-2">
-              <Button>{t("communities.createTitle")}</Button>
-            </Link>
+            <div className="mt-2 flex flex-wrap justify-center gap-2">
+              <Link href="/app/quick?f=blitz">
+                <Button>{t("quick.quickCta")}</Button>
+              </Link>
+              <Link href="/app/quick?f=league">
+                <Button variant="secondary">{t("quick.leagueCta")}</Button>
+              </Link>
+            </div>
           }
         />
       ) : (
