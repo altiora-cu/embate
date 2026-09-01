@@ -177,15 +177,21 @@ function propagateResolvedByes(matches: GeneratedMatch[]): void {
   }
 }
 
+/** Cantidad de vueltas de una liga: 1 (solo ida) o 2 (ida y vuelta). */
+export type LeagueLegs = 1 | 2;
+
 /**
- * Liga de todos contra todos, una vuelta (método del círculo).
+ * Liga de todos contra todos (método del círculo), a una o dos vueltas.
  *
  * Con número impar de inscritos se agrega un bye rotativo: cada jornada un jugador
  * descansa. El local/visitante se alterna por jornada para que nadie juegue siempre
- * del mismo lado.
+ * del mismo lado. Con dos vueltas, la segunda repite el fixture de la primera con
+ * los lados invertidos — como una liga real: el partido de vuelta se juega en la
+ * "cancha" del otro.
  */
 export function generateRoundRobin(
   entries: readonly TournamentEntry[],
+  legs: LeagueLegs = 1,
 ): GeneratedMatch[] {
   if (entries.length < 2) {
     throw new Error("Se necesitan al menos 2 inscritos para generar una liga.");
@@ -229,6 +235,18 @@ export function generateRoundRobin(
     wheel.splice(1, 0, wheel.pop()!);
   }
 
+  if (legs === 2) {
+    const firstLegRounds = rounds;
+    const secondLeg = matches.map((match) => ({
+      ...match,
+      key: matchKey(match.round + firstLegRounds, match.position),
+      round: match.round + firstLegRounds,
+      homeEntryId: match.awayEntryId,
+      awayEntryId: match.homeEntryId,
+    }));
+    matches.push(...secondLeg);
+  }
+
   return matches;
 }
 
@@ -236,9 +254,11 @@ export function generateRoundRobin(
 export function generateMatches(
   format: "league" | "cup" | "blitz",
   entries: readonly TournamentEntry[],
+  legs: LeagueLegs = 1,
 ): GeneratedMatch[] {
+  // Las vueltas solo tienen sentido en liga: una eliminatoria no se repite.
   return format === "league"
-    ? generateRoundRobin(entries)
+    ? generateRoundRobin(entries, legs)
     : generateSingleElimination(entries);
 }
 

@@ -589,3 +589,107 @@ describe("límite de comunidades gratuitas por cuenta", () => {
     await db.exec(`delete from public.communities where slug = 'tercera'`);
   });
 });
+
+describe("cierre automático del torneo (0009)", () => {
+  /** Liga en juego con dos partidos entre los mismos dos jugadores (ida y vuelta). */
+  async function createTwoMatchLeague() {
+    const tournament = await db.one<{ id: string }>(
+      `insert into public.tournaments (community_id, name, format, game_mode, size, legs, status, created_by)
+       values ($1, 'Liga corta', 'league', 'kick_off', 4, 2, 'in_progress', $2)
+       returning id`,
+      [communityId, admin],
+    );
+
+    const entries = await db.query<{ id: string; user_id: string }>(
+      `insert into public.tournament_entries (tournament_id, user_id, gamertag, platform, seed)
+       values ($1, $2, 'alice', 'ps5', 1), ($1, $3, 'bob', 'ps5', 2)
+       returning id, user_id`,
+      [tournament!.id, alice, bob],
+    );
+    const aliceEntry = entries.find((e) => e.user_id === alice)!;
+    const bobEntry = entries.find((e) => e.user_id === bob)!;
+
+    const matches = await db.query<{ id: string }>(
+      `insert into public.matches (tournament_id, round, position, home_entry_id, away_entry_id)
+       values ($1, 1, 1, $2, $3), ($1, 2, 1, $3, $2)
+       returning id`,
+      [tournament!.id, aliceEntry.id, bobEntry.id],
+    );
+
+    return { tournamentId: tournament!.id, matchIds: matches.map((m) => m.id) };
+  }
+
+  const tournamentStatus = async (id: string) =>
+    (await db.one<{ status: string }>(
+      `select status from public.tournaments where id = $1`,
+      [id],
+    ))!.status;
+
+  async function settle(matchId: string, home: number, away: number) {
+    await db.actAs(alice);
+    await db.query(`select public.submit_match_report($1, $2, $3, null)`, [
+      matchId,
+      home,
+      away,
+    ]);
+    await db.actAs(bob);
+    await db.query(`select public.confirm_match($1)`, [matchId]);
+  }
+
+  it("sigue en juego mientras quede un partido pendiente", async () => {
+    const { tournamentId, matchIds } = await createTwoMatchLeague();
+    await settle(matchIds[0], 2, 1);
+    expect(await tournamentStatus(tournamentId)).toBe("in_progress");
+  });
+
+  it("pasa a terminado al resolverse el último partido", async () => {
+    const { tournamentId, matchIds } = await createTwoMatchLeague();
+    await settle(matchIds[0], 2, 1);
+    await settle(matchIds[1], 0, 3);
+    expect(await tournamentStatus(tournamentId)).toBe("finished");
+  });
+
+  it("un partido en disputa mantiene el torneo abierto", async () => {
+    const { tournamentId, matchIds } = await createTwoMatchLeague();
+    await settle(matchIds[0], 2, 1);
+
+    // Marcadores en conflicto en el último partido: queda disputado, no resuelto.
+    await db.actAs(alice);
+    await db.query(`select public.submit_match_report($1, 3, 0, null)`, [matchIds[1]]);
+    await db.actAs(bob);
+    await db.query(`select public.submit_match_report($1, 0, 3, null)`, [matchIds[1]]);
+
+    expect(await tournamentStatus(tournamentId)).toBe("in_progress");
+  });
+
+  it("resolver la última disputa también cierra el torneo", async () => {
+    const { tournamentId, matchIds } = await createTwoMatchLeague();
+    await settle(matchIds[0], 2, 1);
+
+    await db.actAs(alice);
+    await db.query(`select public.submit_match_report($1, 3, 0, null)`, [matchIds[1]]);
+    await db.actAs(bob);
+    await db.query(`select public.submit_match_report($1, 0, 3, null)`, [matchIds[1]]);
+
+    const dispute = await db.one<{ id: string }>(
+      `select id from public.disputes where match_id = $1 and status = 'open'`,
+      [matchIds[1]],
+    );
+
+    await db.actAs(admin);
+    await db.query(`select public.resolve_dispute($1, 1, 2, false, null)`, [
+      dispute!.id,
+    ]);
+
+    expect(await tournamentStatus(tournamentId)).toBe("finished");
+  });
+
+  it("no toca torneos cerrados a mano por el organizador", async () => {
+    const { tournamentId, matchIds } = await createTwoMatchLeague();
+    await db.exec(
+      `update public.tournaments set status = 'cancelled' where id = '${tournamentId}'`,
+    );
+    await settle(matchIds[0], 2, 1);
+    expect(await tournamentStatus(tournamentId)).toBe("cancelled");
+  });
+});

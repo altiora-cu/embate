@@ -73,6 +73,8 @@ export const createTournamentSchema = z.object({
   size: optionalSizeSchema,
   startsAt: optionalDateSchema,
   registrationClosesAt: optionalDateSchema,
+  /** Vueltas de liga. Solo aplica al formato `league`; el resto la ignora. */
+  legs: z.coerce.number().int().min(1).max(2).default(1),
 });
 
 export const registerEntrySchema = z.object({

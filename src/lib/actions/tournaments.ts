@@ -31,6 +31,7 @@ export async function createTournamentAction(
     size: formData.get("size") ?? "",
     startsAt: formData.get("startsAt") ?? "",
     registrationClosesAt: formData.get("registrationClosesAt") ?? "",
+    legs: formData.get("legs") ?? "1",
   });
 
   if (!parsed.success) {
@@ -52,6 +53,8 @@ export async function createTournamentAction(
       game_mode: parsed.data.gameMode,
       // `null` = sin límite de jugadores.
       size: parsed.data.size,
+      // Las vueltas solo existen en liga; el resto queda normalizado en 1.
+      legs: parsed.data.format === "league" ? parsed.data.legs : 1,
       status: "registration",
       starts_at: parsed.data.startsAt ? new Date(parsed.data.startsAt).toISOString() : null,
       registration_closes_at: parsed.data.registrationClosesAt
@@ -88,6 +91,7 @@ export async function quickTournamentAction(
     size: formData.get("size") ?? "",
     startsAt: formData.get("startsAt") ?? "",
     registrationClosesAt: formData.get("registrationClosesAt") ?? "",
+    legs: formData.get("legs") ?? "1",
   });
 
   if (!parsed.success) {
@@ -155,6 +159,7 @@ export async function quickTournamentAction(
       format: parsed.data.format,
       game_mode: parsed.data.gameMode,
       size: parsed.data.size,
+      legs: parsed.data.format === "league" ? parsed.data.legs : 1,
       status: "registration",
       starts_at: parsed.data.startsAt
         ? new Date(parsed.data.startsAt).toISOString()
@@ -285,7 +290,7 @@ export async function closeRegistrationAction(
 
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("id, format, status")
+    .select("id, format, status, legs")
     .eq("id", tournamentId)
     .maybeSingle();
 
@@ -323,7 +328,11 @@ export async function closeRegistrationAction(
     if (error) return fail(toErrorKey(error));
   }
 
-  const generated = generateMatches(tournament.format, seeded);
+  const generated = generateMatches(
+    tournament.format,
+    seeded,
+    tournament.legs === 2 ? 2 : 1,
+  );
 
   // Paso 1: insertar los partidos sin los enlaces de avance.
   const { data: inserted, error: insertError } = await supabase

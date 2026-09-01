@@ -37,6 +37,9 @@ export function CreateTournamentForm({
       : quickTournamentAction;
   const [state, formAction, pending] = useActionState(action, INITIAL);
   const [capped, setCapped] = useState(false);
+  // Se sigue el formato elegido para mostrar las vueltas solo en liga:
+  // preguntar "¿ida y vuelta?" en una copa sería ruido.
+  const [format, setFormat] = useState<string>(defaultFormat);
 
   const fields = state.status === "error" ? (state.fields ?? {}) : {};
 
@@ -55,7 +58,15 @@ export function CreateTournamentForm({
         />
       </Field>
 
-      <fieldset className="flex flex-col gap-2">
+      <fieldset
+        className="flex flex-col gap-2"
+        onChange={(event) => {
+          const target = event.target;
+          if (target instanceof HTMLInputElement && target.name === "format") {
+            setFormat(target.value);
+          }
+        }}
+      >
         <legend className="mb-1 text-body-sm font-medium text-ink">
           {t("tournaments.format")}
         </legend>
@@ -83,6 +94,29 @@ export function CreateTournamentForm({
           />
         </div>
       </fieldset>
+
+      {format === "league" && (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-body-sm font-medium text-ink">
+            {t("tournaments.legs")}
+          </legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <RadioCard
+              name="legs"
+              value="1"
+              title={t("tournaments.legsOne")}
+              description={t("tournaments.legsOneHint")}
+              defaultChecked
+            />
+            <RadioCard
+              name="legs"
+              value="2"
+              title={t("tournaments.legsTwo")}
+              description={t("tournaments.legsTwoHint")}
+            />
+          </div>
+        </fieldset>
+      )}
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-body-sm font-medium text-ink">

@@ -243,3 +243,41 @@ describe("generateRoundRobin — liga", () => {
     expect(() => generateRoundRobin(makeEntries(1))).toThrow();
   });
 });
+
+describe("generateRoundRobin — ida y vuelta", () => {
+  it("duplica los partidos: n(n-1) en total", () => {
+    const matches = generateRoundRobin(makeEntries(6), 2);
+    expect(matches).toHaveLength(30);
+  });
+
+  it("duplica las jornadas: 2(n-1) con número par", () => {
+    const matches = generateRoundRobin(makeEntries(6), 2);
+    expect(new Set(matches.map((m) => m.round)).size).toBe(10);
+  });
+
+  it("cada pareja se enfrenta exactamente dos veces", () => {
+    const matches = generateRoundRobin(makeEntries(5), 2);
+    const byPair = new Map<string, number>();
+    for (const m of matches) {
+      const pair = [m.homeEntryId, m.awayEntryId].sort().join("|");
+      byPair.set(pair, (byPair.get(pair) ?? 0) + 1);
+    }
+    expect([...byPair.values()].every((count) => count === 2)).toBe(true);
+    expect(byPair.size).toBe((5 * 4) / 2);
+  });
+
+  it("el partido de vuelta invierte local y visitante", () => {
+    const matches = generateRoundRobin(makeEntries(4), 2);
+    const ordered = new Set(
+      matches.map((m) => `${m.homeEntryId}>${m.awayEntryId}`),
+    );
+    // Si toda vuelta invierte los lados, ningún cruce dirigido se repite:
+    // n(n-1) partidos y n(n-1) pares ordenados distintos.
+    expect(ordered.size).toBe(matches.length);
+  });
+
+  it("las claves de partido no chocan entre vueltas", () => {
+    const matches = generateRoundRobin(makeEntries(6), 2);
+    expect(new Set(matches.map((m) => m.key)).size).toBe(matches.length);
+  });
+});

@@ -66,6 +66,8 @@ export type TournamentRow = {
   game: string;
   /** Cupo máximo. `null` = sin límite de jugadores. */
   size: number | null;
+  /** Vueltas de liga: 1 = solo ida, 2 = ida y vuelta. Sin efecto en copa. */
+  legs: number;
   status: TournamentStatus;
   starts_at: string | null;
   /** Cierre de inscripciones. `null` = lo cierra el organizador a mano. */
@@ -217,7 +219,7 @@ export interface Database {
           Partial<
             Pick<
               TournamentRow,
-              "game" | "status" | "starts_at" | "size" | "registration_closes_at"
+              "game" | "status" | "starts_at" | "size" | "registration_closes_at" | "legs"
             >
           >,
         [
