@@ -124,6 +124,14 @@ export type DisputeRow = {
   created_at: string;
 }
 
+export type CommunityMessageRow = {
+  id: string;
+  community_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+}
+
 export type PlayerStatsRow = {
   community_id: string;
   user_id: string;
@@ -272,6 +280,14 @@ export interface Database {
         [
           FK<"player_stats_community_id_fkey", "community_id", "communities">,
           FK<"player_stats_user_id_fkey", "user_id", "profiles">,
+        ]
+      >;
+      community_messages: Table<
+        CommunityMessageRow,
+        Pick<CommunityMessageRow, "community_id" | "user_id" | "body">,
+        [
+          FK<"community_messages_community_id_fkey", "community_id", "communities">,
+          FK<"community_messages_user_id_fkey", "user_id", "profiles">,
         ]
       >;
     };

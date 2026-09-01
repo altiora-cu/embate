@@ -18,6 +18,7 @@ export function CommunityNav({ slug, isAdmin }: { slug: string; isAdmin: boolean
   const items = [
     { href: base, label: t("tournaments"), exact: true },
     { href: `${base}/ranking`, label: t("ranking"), exact: false },
+    { href: `${base}/chat`, label: t("chat"), exact: false },
     { href: `${base}/me`, label: t("profile"), exact: false },
     ...(isAdmin ? [{ href: `${base}/admin`, label: t("admin"), exact: false }] : []),
   ];

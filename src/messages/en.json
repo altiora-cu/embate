@@ -32,6 +32,7 @@
     "myCommunities": "My communities",
     "profile": "My profile",
     "admin": "Organizing",
+    "chat": "Chat",
     "platformAdmin": "Panel",
     "signIn": "Sign in",
     "signUp": "Sign up",
@@ -330,6 +331,15 @@
     "privacy": "Privacy policy",
     "disclaimerTitle": "About third-party trademarks",
     "lastUpdated": "Last updated: {date}"
+  },
+  "chat": {
+    "title": "Community chat",
+    "subtitle": "Arrange friendlies, share your in-game ID or just talk. Members only.",
+    "empty": "Nobody has said anything yet. Break the ice.",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "sendError": "Couldn't send. Try again.",
+    "unknownAuthor": "Player"
   },
   "quick": {
     "title": "Quick tournament",

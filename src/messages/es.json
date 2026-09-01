@@ -32,6 +32,7 @@
     "myCommunities": "Mis comunidades",
     "profile": "Mi perfil",
     "admin": "Organización",
+    "chat": "Chat",
     "platformAdmin": "Panel",
     "signIn": "Entrar",
     "signUp": "Crear cuenta",
@@ -330,6 +331,15 @@
     "privacy": "Política de privacidad",
     "disclaimerTitle": "Sobre las marcas de terceros",
     "lastUpdated": "Última actualización: {date}"
+  },
+  "chat": {
+    "title": "Chat de la comunidad",
+    "subtitle": "Coordina amistosos, pasa tu ID del juego o simplemente habla. Solo los miembros pueden leer.",
+    "empty": "Todavía nadie dijo nada. Rompe el hielo.",
+    "placeholder": "Escribe un mensaje…",
+    "send": "Enviar",
+    "sendError": "No se pudo enviar. Intenta de nuevo.",
+    "unknownAuthor": "Jugador"
   },
   "quick": {
     "title": "Torneo rápido",
